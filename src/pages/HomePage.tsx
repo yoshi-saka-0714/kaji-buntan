@@ -7,9 +7,54 @@ import {
   isSunday,
 } from '../lib/api';
 import type { Completion } from '../types';
+import type { User } from '../types';
 import PointsChart from '../components/PointsChart';
 
 const USER_COLORS = ['blue', 'pink'];
+const USER_DOT_COLORS = ['#3b82f6', '#ec4899'];
+
+function formatDateTime(isoString: string): string {
+  const d = new Date(isoString);
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const day = days[d.getDay()];
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${day}曜 ${h}:${m}`;
+}
+
+function ActivityFeed({ completions, users }: { completions: Completion[]; users: User[] }) {
+  const sorted = [...completions].reverse();
+
+  if (sorted.length === 0) {
+    return <p className="empty-msg" style={{ padding: '16px 0' }}>まだ記録がありません。</p>;
+  }
+
+  return (
+    <div className="activity-feed">
+      {sorted.map((c, i) => {
+        const userIdx = users.findIndex((u) => u.id === c.user_id);
+        const user = users[userIdx];
+        const dotColor = USER_DOT_COLORS[userIdx] ?? '#94a3b8';
+        return (
+          <div key={c.id} className="activity-item">
+            <div className="activity-dot" style={{ background: dotColor }} />
+            {i < sorted.length - 1 && <div className="activity-line" />}
+            <div className="activity-body">
+              <div className="activity-main">
+                <span className="activity-user" style={{ color: dotColor }}>{user?.name ?? '?'}</span>
+                <span className="activity-task">が「{c.task_name}」を完了</span>
+              </div>
+              <div className="activity-meta">
+                <span className="activity-pts">+{c.points}pt</span>
+                <span className="activity-time">{formatDateTime(c.completed_at)}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function HomePage() {
   const { currentUser, allUsers } = useAuth();
@@ -80,6 +125,9 @@ export default function HomePage() {
 
           <h2>日次推移</h2>
           <PointsChart data={dailyData} users={allUsers} />
+
+          <h2 style={{ marginTop: 24 }}>今週の記録</h2>
+          <ActivityFeed completions={completions} users={allUsers} />
         </>
       )}
     </div>

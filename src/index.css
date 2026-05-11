@@ -191,6 +191,44 @@ body {
   box-shadow: var(--shadow);
 }
 
+/* ── Activity Feed ── */
+.activity-feed { display: flex; flex-direction: column; }
+.activity-item {
+  display: flex;
+  gap: 12px;
+  position: relative;
+  padding-bottom: 16px;
+}
+.activity-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+  box-shadow: 0 0 6px rgba(0,0,0,.15);
+}
+.activity-line {
+  position: absolute;
+  left: 4px;
+  top: 14px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+.activity-body {
+  flex: 1;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  box-shadow: var(--shadow);
+}
+.activity-main { font-size: 14px; margin-bottom: 4px; }
+.activity-user { font-weight: 700; }
+.activity-task { color: var(--text); }
+.activity-meta { display: flex; justify-content: space-between; align-items: center; }
+.activity-pts { font-size: 13px; font-weight: 700; color: var(--primary); }
+.activity-time { font-size: 12px; color: var(--muted); }
+
 /* ── Task List ── */
 .task-list { display: flex; flex-direction: column; gap: 10px; }
 .task-card {
