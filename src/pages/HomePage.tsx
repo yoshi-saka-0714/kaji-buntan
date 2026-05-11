@@ -1,4 +1,25 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+function useCountUp(target: number, duration = 900): number {
+  const [count, setCount] = useState(0);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    cancelAnimationFrame(rafRef.current);
+    if (target === 0) { setCount(0); return; }
+    const start = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setCount(Math.round(eased * target));
+      if (progress < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [target, duration]);
+
+  return count;
+}
 import { useAuth } from '../contexts/AuthContext';
 import {
   getWeekCompletions,
@@ -79,6 +100,9 @@ export default function HomePage() {
   const myColorIdx = allUsers.findIndex((u) => u.id === currentUser.id);
   const partnerColorIdx = allUsers.findIndex((u) => u.id === partner.id);
 
+  const myPointsAnimated = useCountUp(loading ? 0 : myPoints);
+  const partnerPointsAnimated = useCountUp(loading ? 0 : partnerPoints);
+
   const showAlert = isSunday() && myPoints < partnerPoints;
   const dailyData = buildDailyData(completions, allUsers);
 
@@ -99,12 +123,12 @@ export default function HomePage() {
           <div className="points-grid">
             <div className={`points-card ${USER_COLORS[myColorIdx]}`}>
               <div className="points-name">{currentUser.name}（あなた）</div>
-              <div className="points-value">{myPoints}</div>
+              <div className="points-value">{myPointsAnimated}</div>
               <div className="points-unit">pt</div>
             </div>
             <div className={`points-card ${USER_COLORS[partnerColorIdx]}`}>
               <div className="points-name">{partner.name}</div>
-              <div className="points-value">{partnerPoints}</div>
+              <div className="points-value">{partnerPointsAnimated}</div>
               <div className="points-unit">pt</div>
             </div>
           </div>
