@@ -66,11 +66,16 @@ export default function HomePage() {
           </div>
 
           <div className="diff-badge">
-            {diff === 0
-              ? '🟰 互角！'
-              : diff > 0
-              ? `あなたが ${diff}pt 多い`
-              : `あなたが ${-diff}pt 少ない`}
+            <div className="diff-character">
+              {diff === 0 ? '🤝' : diff > 0 ? (diff >= 10 ? '🏆' : '😊') : (-diff >= 10 ? '🔥' : '😅')}
+            </div>
+            <div className="diff-text">
+              {diff === 0
+                ? 'ふたりとも互角！すごい！'
+                : diff > 0
+                ? `あなたが ${diff}pt 多い`
+                : `あなたが ${-diff}pt 少ない…頑張れ！`}
+            </div>
           </div>
 
           <h2>日次推移</h2>
