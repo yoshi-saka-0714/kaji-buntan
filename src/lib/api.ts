@@ -122,6 +122,11 @@ export async function addCompletion(
   return data;
 }
 
+export async function deleteCompletion(id: string): Promise<void> {
+  const { error } = await supabase.from('completions').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // Analytics
 export interface DayData {
   label: string;

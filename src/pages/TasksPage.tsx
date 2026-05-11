@@ -1,24 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { getTasks, addCompletion } from '../lib/api';
-import type { Task } from '../types';
+import { getTasks, addCompletion, getWeekCompletions, deleteCompletion } from '../lib/api';
+import type { Task, Completion } from '../types';
+
+function formatTime(isoString: string): string {
+  const d = new Date(isoString);
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  return `${days[d.getDay()]} ${h}:${m}`;
+}
 
 export default function TasksPage() {
   const { currentUser } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [completions, setCompletions] = useState<Completion[]>([]);
   const [completing, setCompleting] = useState<string | null>(null);
   const [recentDone, setRecentDone] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
-    getTasks().then((data) => { setTasks(data); setLoading(false); });
+  const load = useCallback(async () => {
+    const [t, c] = await Promise.all([getTasks(), getWeekCompletions()]);
+    setTasks(t);
+    setCompletions(c);
+    setLoading(false);
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   async function handleComplete(task: Task) {
     if (!currentUser || completing) return;
     setCompleting(task.id);
     try {
-      await addCompletion(currentUser.id, task.id, task.name, task.points);
+      const c = await addCompletion(currentUser.id, task.id, task.name, task.points);
+      setCompletions((prev) => [...prev, c]);
       setRecentDone((prev) => new Set(prev).add(task.id));
       setTimeout(() => {
         setRecentDone((prev) => {
@@ -33,6 +49,23 @@ export default function TasksPage() {
       setCompleting(null);
     }
   }
+
+  async function handleDelete(id: string) {
+    setDeleting(id);
+    try {
+      await deleteCompletion(id);
+      setCompletions((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(null);
+    }
+  }
+
+  const myCompletions = completions
+    .filter((c) => c.user_id === currentUser?.id)
+    .slice()
+    .reverse();
 
   if (loading) {
     return <div className="loading-inline"><div className="spinner" /></div>;
@@ -63,6 +96,29 @@ export default function TasksPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      <h2 style={{ marginTop: 28 }}>今週の履歴（あなた）</h2>
+      {myCompletions.length === 0 ? (
+        <p className="empty-msg" style={{ padding: '20px 0' }}>まだ完了したタスクはありません。</p>
+      ) : (
+        <div className="history-list">
+          {myCompletions.map((c) => (
+            <div key={c.id} className="history-card">
+              <div className="history-info">
+                <span className="history-name">{c.task_name}</span>
+                <span className="history-meta">{formatTime(c.completed_at)} · {c.points}pt</span>
+              </div>
+              <button
+                className="delete-btn"
+                onClick={() => handleDelete(c.id)}
+                disabled={deleting === c.id}
+              >
+                {deleting === c.id ? '…' : '取消'}
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>
