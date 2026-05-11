@@ -122,6 +122,17 @@ export async function addCompletion(
   return data;
 }
 
+export async function updateUserName(id: string, name: string): Promise<User> {
+  const { data, error } = await supabase
+    .from('users')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function deleteCompletion(id: string): Promise<void> {
   const { error } = await supabase.from('completions').delete().eq('id', id);
   if (error) throw error;
