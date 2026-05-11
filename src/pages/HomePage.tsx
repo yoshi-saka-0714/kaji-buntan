@@ -31,7 +31,7 @@ function ActivityFeed({ completions, users }: { completions: Completion[]; users
 
   return (
     <div className="activity-feed">
-      {sorted.map((c, i) => {
+      {sorted.map((c) => {
         const userIdx = users.findIndex((u) => u.id === c.user_id);
         const user = users[userIdx];
         const dotColor = USER_DOT_COLORS[userIdx] ?? '#94a3b8';
