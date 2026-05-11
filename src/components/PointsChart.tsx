@@ -11,7 +11,7 @@ import {
 import type { DayData } from '../lib/api';
 import type { User } from '../types';
 
-const USER_COLORS = ['#3b82f6', '#ec4899'];
+const USER_COLORS = ['#4f46e5', '#e11d48'];
 
 interface Props {
   data: DayData[];

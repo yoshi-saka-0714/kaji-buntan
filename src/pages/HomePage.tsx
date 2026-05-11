@@ -37,8 +37,7 @@ function ActivityFeed({ completions, users }: { completions: Completion[]; users
         const dotColor = USER_DOT_COLORS[userIdx] ?? '#94a3b8';
         return (
           <div key={c.id} className="activity-item">
-            <div className="activity-dot" style={{ background: dotColor }} />
-            {i < sorted.length - 1 && <div className="activity-line" />}
+            <div className="activity-stripe" style={{ background: dotColor }} />
             <div className="activity-body">
               <div className="activity-main">
                 <span className="activity-user" style={{ color: dotColor }}>{user?.name ?? '?'}</span>
